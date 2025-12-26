@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	ServerURL = "http://localhost:8080"
+	ServerURL = "http://localhost:8000"
 )
 
 var rdb *redis.Client
@@ -39,11 +39,11 @@ func main() {
 	mux.HandleFunc("/", RedirectHandler)
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":8000",
 		Handler: mux,
 	}
 
-	fmt.Println("Server starting on :8080")
+	fmt.Println("Server starting on :8000")
 	if err := server.ListenAndServe(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			fmt.Println("Error starting server:", err)
