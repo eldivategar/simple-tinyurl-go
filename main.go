@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"os"
 
@@ -34,11 +36,19 @@ func main() {
 		ServerURL = serverURL
 	}
 
-	rdb = redis.NewClient(&redis.Options{
+	redisOptions := &redis.Options{
 		Addr:     redisAddr,
 		Password: redisPassword,
 		DB:       0,
-	})
+	}
+
+	if strings.Contains(redisAddr, "upstash.io") {
+		redisOptions.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+	}
+
+	rdb = redis.NewClient(redisOptions)
 
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		fmt.Println("Error connecting to Redis:", err)
