@@ -24,14 +24,27 @@ func main() {
 		redisAddr = "localhost:6379"
 	}
 
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	if redisPassword == "" {
+		redisPassword = ""
+	}
+
 	serverURL := os.Getenv("SERVER_URL")
 	if serverURL != "" {
 		ServerURL = serverURL
 	}
 
 	rdb = redis.NewClient(&redis.Options{
-		Addr: redisAddr,
+		Addr:     redisAddr,
+		Password: redisPassword,
+		DB:       0,
 	})
+
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		fmt.Println("Error connecting to Redis:", err)
+	} else {
+		fmt.Println("Connected to Redis")
+	}
 
 	mux := http.NewServeMux()
 
