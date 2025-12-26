@@ -61,7 +61,7 @@ func TinyURLHandler(w http.ResponseWriter, r *http.Request) {
 	res = URLResponse{
 		ShortURL: shortURL,
 		LongURL:  req.LongURL,
-		Message:  "Short URL will be expired in 24 hours",
+		Message:  "Exclusive link will be expired in 24 hours",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
