@@ -40,7 +40,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":8000",
-		Handler: mux,
+		Handler: corsMiddleware(mux),
 	}
 
 	fmt.Println("Server starting on :8000")
@@ -49,4 +49,21 @@ func main() {
 			fmt.Println("Error starting server:", err)
 		}
 	}
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set Header CORS
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+
+		// Handle Preflight (OPTIONS)
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
