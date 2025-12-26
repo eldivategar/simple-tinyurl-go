@@ -7,24 +7,30 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 )
 
 var (
-	ServerURL        = "http://localhost:8000"
-	RateLimitMax     = 10
-	RateLimitWindows = 1 * time.Minute
+	ServerURL            = "http://localhost:8000"
+	RateLimitMax         = 10
+	RateLimitWindows     = 1 * time.Minute
+	ExlusiveLinkExp  int = 24 // in hours
 )
 
 var rdb *redis.Client
 var ctx = context.Background()
 
 func main() {
+	// load env
+	godotenv.Load()
+
 	redisAddr := os.Getenv("REDIS_ADDR")
 	if redisAddr == "" {
 		redisAddr = "localhost:6379"
@@ -38,6 +44,10 @@ func main() {
 	serverURL := os.Getenv("SERVER_URL")
 	if serverURL != "" {
 		ServerURL = serverURL
+	}
+
+	if exclusiveLinkExp := os.Getenv("EXCLUSIVE_LINK_EXP"); exclusiveLinkExp != "" {
+		ExlusiveLinkExp, _ = strconv.Atoi(exclusiveLinkExp)
 	}
 
 	redisOptions := &redis.Options{

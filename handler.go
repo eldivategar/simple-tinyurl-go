@@ -51,7 +51,8 @@ func TinyURLHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// save url in redis
-	err = rdb.Set(ctx, shortCode, req.LongURL, 24*time.Hour).Err()
+	exp := time.Duration(ExlusiveLinkExp) * time.Hour
+	err = rdb.Set(ctx, shortCode, req.LongURL, exp).Err()
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Error while saving URL in Redis!", http.StatusInternalServerError)
@@ -61,7 +62,7 @@ func TinyURLHandler(w http.ResponseWriter, r *http.Request) {
 	res = URLResponse{
 		ShortURL: shortURL,
 		LongURL:  req.LongURL,
-		Message:  "Exclusive link will be expired in 24 hours",
+		Message:  fmt.Sprintf("Exclusive link will be expired in %d hours", ExlusiveLinkExp),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
