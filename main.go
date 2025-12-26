@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"os"
 
@@ -14,7 +16,9 @@ import (
 )
 
 var (
-	ServerURL = "http://localhost:8000"
+	ServerURL        = "http://localhost:8000"
+	RateLimitMax     = 10
+	RateLimitWindows = 1 * time.Minute
 )
 
 var rdb *redis.Client
@@ -63,7 +67,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":8000",
-		Handler: corsMiddleware(mux),
+		Handler: corsMiddleware(rateLimitMiddleware(mux)),
 	}
 
 	fmt.Println("Server starting on :8000")
@@ -87,6 +91,38 @@ func corsMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func rateLimitMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// If rate limit is exceeded, return 429 (Too Many Requests)
+		if r.URL.Path == "/tinyurl" && r.Method == "POST" {
+			ip := getRealIP(r)
+			key := "rate_limit:" + ip
+
+			count, err := rdb.Incr(ctx, key).Result()
+			if err != nil {
+				fmt.Println("Redis error:", err)
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			if count == 1 {
+				rdb.Expire(ctx, key, RateLimitWindows)
+			}
+
+			if count > int64(RateLimitMax) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusTooManyRequests)
+				json.NewEncoder(w).Encode(map[string]string{
+					"error":   "Too many requests",
+					"message": "Try again after 1 minute.",
+				})
+				return
+			}
+		}
 		next.ServeHTTP(w, r)
 	})
 }

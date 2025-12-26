@@ -1,11 +1,12 @@
 package main
 
 type URLRequest struct {
-	LongURL string `json:"long_url"`
+	ShortCode string `json:"short_code"`
+	LongURL   string `json:"long_url"`
 }
 
 type URLResponse struct {
-	ShortURL string `json:"short_url"`
-	LongURL  string `json:"long_url"`
+	ShortURL string `json:"short_url,omitempty"`
+	LongURL  string `json:"long_url,omitempty"`
 	Message  string `json:"message"`
 }

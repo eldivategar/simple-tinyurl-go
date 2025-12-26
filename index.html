@@ -162,6 +162,97 @@
             box-shadow: none;
         }
 
+        /* --- CUSTOM OPTION --- */
+        .custom-option {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            transition: color 0.3s;
+        }
+
+        .toggle-btn:hover {
+            color: var(--gold-primary);
+        }
+
+        .toggle-btn svg {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.3s;
+            fill: currentColor;
+        }
+
+        .toggle-btn.active svg {
+            transform: rotate(90deg);
+        }
+
+        .custom-input-container {
+            display: none;
+            margin-top: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .custom-field-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 4px 16px;
+            transition: border-color 0.3s;
+        }
+
+        .custom-field-wrapper:focus-within {
+            border-color: var(--gold-primary);
+        }
+
+        .domain-prefix {
+            color: #555;
+            font-size: 0.9rem;
+            margin-right: 5px;
+            white-space: nowrap;
+        }
+
+        input#customCode {
+            background: transparent;
+            border: none;
+            color: var(--gold-light);
+            font-size: 0.95rem;
+            width: 100%;
+            padding: 12px 0;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .char-limit {
+            font-size: 0.7rem;
+            color: #444;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* --- RESULT SECTION --- */
         #result-area {
             margin-top: 2.5rem;
@@ -311,6 +402,22 @@
             <input type="url" id="longUrl" placeholder="Paste your long link here..." autofocus required>
         </div>
 
+        <div class="custom-option">
+            <button type="button" class="toggle-btn" id="toggleCustomBtn" onclick="toggleCustomField()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+                Custom Alias (Optional)
+            </button>
+            <div class="custom-input-container" id="customContainer">
+                <div class="custom-field-wrapper">
+                    <span class="domain-prefix" id="domainPrefix">tinyurl.com/</span>
+                    <input type="text" id="customCode" placeholder="my-link" maxlength="25">
+                </div>
+                <div class="char-limit">Max 25 chars (letters, numbers, -)</div>
+            </div>
+        </div>
+
         <button id="shortenBtn" onclick="shortenUrl()">Shorten Now</button>
 
         <p id="errorMsg" class="error-msg"></p>
@@ -329,8 +436,15 @@
     </div>
 
     <script>
-        // URL Backend Kamu yang sudah connect Redis
-        const API_URL = "https://holy-raynell-eldivategar-812783ea.koyeb.app/tinyurl";
+        // URL Backend
+        const isLocal =
+            window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1" ||
+            window.location.protocol === "file:";
+
+        const API_URL = isLocal
+            ? "http://localhost:8000/tinyurl"
+            : "/tinyurl";
 
         async function shortenUrl() {
             const longUrlInput = document.getElementById('longUrl');
@@ -356,6 +470,21 @@
                 return;
             }
 
+            // Prepare Payload
+            const reqBody = { long_url: url };
+
+            // Add Custom Code if visible and filled
+            const customCode = document.getElementById('customCode').value.trim();
+            const customContainer = document.getElementById('customContainer');
+
+            if (customContainer.style.display === 'block' && customCode) {
+                if (!isValidCustomCode(customCode)) {
+                    showError("Alias invalid (Max 25 chars, alphanumeric & dashes only)");
+                    return;
+                }
+                reqBody.short_code = customCode;
+            }
+
             // Loading UI
             shortenBtn.disabled = true;
             shortenBtn.innerText = "PROCESSING...";
@@ -365,16 +494,16 @@
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ long_url: url })
+                    body: JSON.stringify(reqBody)
                 });
 
+                const data = await response.json();
+
                 if (!response.ok) {
-                    // Coba baca pesan error dari backend (text)
-                    const errorText = await response.text();
+                    // Error response from server
+                    const errorText = data.message || data.error;
                     throw new Error(errorText || `Server Error: ${response.status}`);
                 }
-
-                const data = await response.json();
 
                 // Update UI Success
                 shortLinkDisplay.href = data.short_url;
@@ -385,7 +514,7 @@
 
             } catch (err) {
                 console.error(err);
-                // Tampilkan pesan error spesifik jika ada
+                // Show error message
                 showError(err.message || "Connection failed. Please try again.");
             } finally {
                 shortenBtn.disabled = false;
@@ -402,6 +531,40 @@
                 return false;
             }
         }
+
+        function isValidCustomCode(code) {
+            const regex = /^[a-zA-Z0-9-]+$/;
+            return code.length <= 25 && regex.test(code);
+        }
+
+        function toggleCustomField() {
+            const container = document.getElementById('customContainer');
+            const btn = document.getElementById('toggleCustomBtn');
+            const codeInput = document.getElementById('customCode');
+
+            if (container.style.display === "none" || container.style.display === "") {
+                container.style.display = "block";
+                btn.classList.add("active");
+                codeInput.focus();
+
+                // Update prefix dynamically based on environment
+                const prefix = isLocal ? "localhost:8000/" : "tinyurl.com/";
+                // Note: user requested just a visual; assuming tinyurl.com for cosmetic or dynamic host
+                document.getElementById('domainPrefix').textContent = window.location.host + "/";
+            } else {
+                container.style.display = "none";
+                btn.classList.remove("active");
+                codeInput.value = ""; // Clear when hidden
+            }
+        }
+
+        // Live validation for custom code
+        document.getElementById('customCode').addEventListener('input', function (e) {
+            const val = e.target.value;
+            if (/[^a-zA-Z0-9-_]/.test(val)) {
+                e.target.value = val.replace(/[^a-zA-Z0-9-_]/g, '');
+            }
+        });
 
         function showError(msg) {
             const errorMsg = document.getElementById('errorMsg');

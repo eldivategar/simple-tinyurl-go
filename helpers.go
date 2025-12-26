@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"math/rand"
+	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -30,4 +32,13 @@ func GetLongURL(shortCode string) (string, error) {
 	}
 
 	return originalURL, nil
+}
+
+func getRealIP(r *http.Request) string {
+	xfwd := r.Header.Get("X-Forwarded-For")
+	if xfwd != "" {
+		ips := strings.Split(xfwd, ",")
+		return strings.TrimSpace(ips[0])
+	}
+	return r.RemoteAddr
 }

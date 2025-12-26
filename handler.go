@@ -18,6 +18,8 @@ func TinyURLHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	var req URLRequest
+	var res URLResponse
+
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error while reading request body!", http.StatusInternalServerError)
@@ -29,8 +31,24 @@ func TinyURLHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error while parsing request body:  %v", err), http.StatusBadRequest)
 		return
 	}
+	var shortURL, shortCode string
 
-	shortURL, shortCode := GenerateShortURL(req.LongURL)
+	if req.ShortCode != "" {
+		shortCode = req.ShortCode
+		shortURL = ServerURL + "/" + shortCode
+
+		// check if short code is already in redis
+		if _, err := rdb.Get(ctx, shortCode).Result(); err == nil {
+			w.WriteHeader(http.StatusBadRequest)
+			res = URLResponse{
+				Message: "Try another one!",
+			}
+			json.NewEncoder(w).Encode(res)
+			return
+		}
+	} else {
+		shortURL, shortCode = GenerateShortURL(req.LongURL)
+	}
 
 	// save url in redis
 	err = rdb.Set(ctx, shortCode, req.LongURL, 24*time.Hour).Err()
@@ -40,7 +58,7 @@ func TinyURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := URLResponse{
+	res = URLResponse{
 		ShortURL: shortURL,
 		LongURL:  req.LongURL,
 		Message:  "Short URL will be expired in 24 hours",
@@ -48,7 +66,7 @@ func TinyURLHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(res)
 }
 
 func RedirectHandler(w http.ResponseWriter, r *http.Request) {
