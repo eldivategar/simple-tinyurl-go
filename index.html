@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoTinyURL</title>
+    <style>
+        /* --- RESET & BASIC STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            /* Dark Slate Background */
+            color: #e2e8f0;
+            /* Light text for contrast */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* --- CARD CONTAINER --- */
+        .card {
+            background-color: #1e293b;
+            /* Slightly lighter dark for card */
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        h1 {
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        /* --- INPUT GROUP --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            background-color: #0f172a;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        input[type="url"]:focus {
+            border-color: #60a5fa;
+            /* Blue focus */
+        }
+
+        /* --- BUTTON --- */
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        /* --- RESULT SECTION --- */
+        #result-area {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #111827;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            display: none;
+            /* Hidden by default */
+            animation: fadeIn 0.4s ease;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .short-link-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1f2937;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .short-link {
+            color: #60a5fa;
+            font-weight: bold;
+            text-decoration: none;
+            word-break: break-all;
+            margin-right: 10px;
+        }
+
+        .short-link:hover {
+            text-decoration: underline;
+        }
+
+        .copy-btn {
+            background: #374151;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            width: auto;
+            margin-top: 0;
+        }
+
+        .expiry-msg {
+            font-size: 0.85rem;
+            color: #10b981;
+            /* Green for success message */
+            margin-top: 10px;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            /* Red for error */
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h1>GoTinyURL</h1>
+        <p class="subtitle">Paste your long link, get a short one (24h validity).</p>
+
+        <div class="input-group">
+            <input type="url" id="longUrl" placeholder="https://example.com/very/long/url..." required>
+        </div>
+
+        <button id="shortenBtn" onclick="shortenUrl()">Shorten URL</button>
+
+        <p id="errorMsg" class="error-msg"></p>
+
+        <div id="result-area">
+            <p class="result-label">Your Short Link:</p>
+            <div class="short-link-wrapper">
+                <a href="#" id="shortLinkDisplay" class="short-link" target="_blank">...</a>
+                <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+            </div>
+            <p id="apiMessage" class="expiry-msg"></p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://tinyurl.vercel.app/tinyurl";
+
+        async function shortenUrl() {
+            const longUrlInput = document.getElementById('longUrl');
+            const shortenBtn = document.getElementById('shortenBtn');
+            const resultArea = document.getElementById('result-area');
+            const errorMsg = document.getElementById('errorMsg');
+            const shortLinkDisplay = document.getElementById('shortLinkDisplay');
+            const apiMessage = document.getElementById('apiMessage');
+
+            const url = longUrlInput.value.trim();
+
+            // Reset UI
+            errorMsg.style.display = 'none';
+            resultArea.style.display = 'none';
+
+            // Simple Validation
+            if (!url) {
+                showError("Please enter a valid URL.");
+                return;
+            }
+
+            // Loading State
+            shortenBtn.disabled = true;
+            shortenBtn.innerText = "Processing...";
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ long_url: url })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Update UI with Success Data
+                shortLinkDisplay.href = data.short_url;
+                shortLinkDisplay.textContent = data.short_url;
+                apiMessage.textContent = data.message || "Link generated successfully!";
+
+                resultArea.style.display = 'block';
+
+            } catch (err) {
+                console.error(err);
+                showError("Failed to shorten URL. Check console or CORS settings.");
+            } finally {
+                // Restore Button
+                shortenBtn.disabled = false;
+                shortenBtn.innerText = "Shorten URL";
+            }
+        }
+
+        function showError(msg) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+        }
+
+        function copyToClipboard() {
+            const linkText = document.getElementById('shortLinkDisplay').textContent;
+            navigator.clipboard.writeText(linkText).then(() => {
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalText = copyBtn.innerText;
+
+                copyBtn.innerText = "Copied!";
+                copyBtn.style.background = "#10b981"; // Green background
+
+                setTimeout(() => {
+                    copyBtn.innerText = originalText;
+                    copyBtn.style.background = "#374151"; // Revert color
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>
