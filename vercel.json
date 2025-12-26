@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/tinyurl",
+            "destination": "https://holy-raynell-eldivategar-812783ea.koyeb.app/tinyurl"
+        },
+        {
+            "source": "/:match*",
+            "destination": "https://holy-raynell-eldivategar-812783ea.koyeb.app/:match*"
+        }
+    ]
+}

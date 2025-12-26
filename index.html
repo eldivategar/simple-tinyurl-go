@@ -4,21 +4,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GoTinyURL</title>
+    <title>Lux TinyURL</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D4AF37'><path d='M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z'/></svg>">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap"
+        rel="stylesheet">
     <style>
-        /* --- RESET & BASIC STYLES --- */
+        /* --- VARIABLES --- */
+        :root {
+            --bg-color: #050505;
+            /* Super Dark Black */
+            --card-bg: #121212;
+            /* Matte Black */
+            --gold-primary: #D4AF37;
+            /* Metallic Gold */
+            --gold-light: #FFD700;
+            /* Bright Gold */
+            --gold-dark: #AA8C2C;
+            /* Darker Gold for Shadow */
+            --text-main: #EAEAEA;
+            --text-muted: #A0A0A0;
+            --success-green: #00E676;
+            /* Neon Green for Success */
+        }
+
+        /* --- RESET & BASIC --- */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: #0f172a;
-            /* Dark Slate Background */
-            color: #e2e8f0;
-            /* Light text for contrast */
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 70%);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -28,151 +50,201 @@
 
         /* --- CARD CONTAINER --- */
         .card {
-            background-color: #1e293b;
-            /* Slightly lighter dark for card */
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            background-color: var(--card-bg);
+            padding: 3rem;
+            border-radius: 20px;
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             text-align: center;
-            border: 1px solid #334155;
+            /* Gold Glow Border */
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8),
+                0 0 15px rgba(212, 175, 55, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hiasan background abstrak emas */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 100px;
+            height: 100px;
+            background: var(--gold-primary);
+            filter: blur(80px);
+            opacity: 0.2;
+            pointer-events: none;
         }
 
         h1 {
+            font-family: 'Playfair Display', serif;
+            /* Font Mewah */
+            font-size: 2.5rem;
             margin-bottom: 0.5rem;
-            font-weight: 700;
-            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            background: linear-gradient(to right, var(--gold-primary), var(--gold-light), var(--gold-primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            text-shadow: 0px 2px 10px rgba(212, 175, 55, 0.2);
         }
 
         p.subtitle {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2.5rem;
+            font-weight: 300;
         }
 
-        /* --- INPUT GROUP --- */
+        /* --- INPUT --- */
         .input-group {
             position: relative;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         input[type="url"] {
             width: 100%;
-            padding: 14px 16px;
-            border-radius: 8px;
-            border: 2px solid #334155;
-            background-color: #0f172a;
-            color: #fff;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background-color: #0a0a0a;
+            color: var(--gold-light);
             font-size: 1rem;
-            transition: border-color 0.3s;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
             outline: none;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        input[type="url"]::placeholder {
+            color: #555;
         }
 
         input[type="url"]:focus {
-            border-color: #60a5fa;
-            /* Blue focus */
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
         }
 
         /* --- BUTTON --- */
-        button {
+        button#shortenBtn {
             width: 100%;
-            padding: 14px;
-            border-radius: 8px;
+            padding: 16px;
+            border-radius: 12px;
             border: none;
-            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-            color: white;
+            /* Gradient Emas */
+            background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
+            color: #000;
+            /* Teks hitam di atas emas agar kontras */
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
             cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
         }
 
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+        button#shortenBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+            filter: brightness(1.1);
         }
 
-        button:active {
+        button#shortenBtn:active {
             transform: translateY(0);
         }
 
         button:disabled {
-            background: #475569;
+            background: #333;
+            color: #666;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
         /* --- RESULT SECTION --- */
         #result-area {
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             padding: 1.5rem;
-            background-color: #111827;
-            border-radius: 8px;
-            border: 1px solid #374151;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #333;
+            border-radius: 12px;
             display: none;
-            /* Hidden by default */
-            animation: fadeIn 0.4s ease;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .result-label {
-            font-size: 0.8rem;
-            color: #9ca3af;
-            margin-bottom: 5px;
+            font-size: 0.75rem;
+            color: var(--gold-primary);
+            margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            font-weight: 600;
         }
 
         .short-link-wrapper {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #1f2937;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
+            background: #000;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #222;
+            margin-bottom: 15px;
         }
 
         .short-link {
-            color: #60a5fa;
-            font-weight: bold;
+            color: var(--text-main);
+            font-weight: 500;
             text-decoration: none;
             word-break: break-all;
             margin-right: 10px;
-        }
-
-        .short-link:hover {
-            text-decoration: underline;
+            font-family: 'Courier New', monospace;
+            /* Tech feel */
         }
 
         .copy-btn {
-            background: #374151;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            width: auto;
-            margin-top: 0;
+            background: transparent;
+            border: 1px solid var(--gold-primary);
+            color: var(--gold-primary);
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
+        .copy-btn:hover {
+            background: var(--gold-primary);
+            color: #000;
+        }
+
+        /* PESAN SUKSES TETAP HIJAU */
         .expiry-msg {
             font-size: 0.85rem;
-            color: #10b981;
-            /* Green for success message */
+            color: var(--success-green);
+            /* Tetap Hijau sesuai request */
             margin-top: 10px;
+            font-weight: 400;
+            text-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
         }
 
         .error-msg {
-            color: #ef4444;
-            /* Red for error */
-            margin-top: 1rem;
+            color: #ff4d4d;
+            margin-top: 1.5rem;
             display: none;
             font-size: 0.9rem;
+            background: rgba(255, 77, 77, 0.1);
+            padding: 10px;
+            border-radius: 8px;
         }
 
-        @keyframes fadeIn {
+        @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
 
             to {
@@ -180,35 +252,45 @@
                 transform: translateY(0);
             }
         }
+
+        /* Footer/Credits kecil */
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #444;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="card">
-        <h1>GoTinyURL</h1>
-        <p class="subtitle">Paste your long link, get a short one (24h validity).</p>
+        <h1>Exquisite URL</h1>
+        <p class="subtitle">Premium Shortener Service. Ephemeral & Secure.</p>
 
         <div class="input-group">
-            <input type="url" id="longUrl" placeholder="https://example.com/very/long/url..." required>
+            <input type="url" id="longUrl" placeholder="Paste your long link here..." required>
         </div>
 
-        <button id="shortenBtn" onclick="shortenUrl()">Shorten URL</button>
+        <button id="shortenBtn" onclick="shortenUrl()">Shorten Now</button>
 
         <p id="errorMsg" class="error-msg"></p>
 
         <div id="result-area">
-            <p class="result-label">Your Short Link:</p>
+            <p class="result-label">Your Exclusive Link</p>
             <div class="short-link-wrapper">
                 <a href="#" id="shortLinkDisplay" class="short-link" target="_blank">...</a>
                 <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
             </div>
             <p id="apiMessage" class="expiry-msg"></p>
         </div>
+
+        <div class="footer">Made with ❤️ by developer</div>
     </div>
 
     <script>
-        const API_URL = "https://tinyurl.vercel.app/tinyurl";
+        // URL Backend Kamu yang sudah connect Redis
+        const API_URL = "https://holy-raynell-eldivategar-812783ea.koyeb.app/tinyurl";
 
         async function shortenUrl() {
             const longUrlInput = document.getElementById('longUrl');
@@ -224,45 +306,41 @@
             errorMsg.style.display = 'none';
             resultArea.style.display = 'none';
 
-            // Simple Validation
             if (!url) {
                 showError("Please enter a valid URL.");
                 return;
             }
 
-            // Loading State
+            // Loading UI
             shortenBtn.disabled = true;
-            shortenBtn.innerText = "Processing...";
+            shortenBtn.innerText = "PROCESSING...";
+            shortenBtn.style.opacity = "0.7";
 
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ long_url: url })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`Server Error: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
 
                 const data = await response.json();
 
-                // Update UI with Success Data
+                // Update UI Success
                 shortLinkDisplay.href = data.short_url;
                 shortLinkDisplay.textContent = data.short_url;
-                apiMessage.textContent = data.message || "Link generated successfully!";
+                apiMessage.textContent = "✔ " + (data.message || "Link generated successfully!");
 
                 resultArea.style.display = 'block';
 
             } catch (err) {
                 console.error(err);
-                showError("Failed to shorten URL. Check console or CORS settings.");
+                showError("Connection failed. Please try again.");
             } finally {
-                // Restore Button
                 shortenBtn.disabled = false;
-                shortenBtn.innerText = "Shorten URL";
+                shortenBtn.innerText = "SHORTEN NOW";
+                shortenBtn.style.opacity = "1";
             }
         }
 
@@ -278,12 +356,16 @@
                 const copyBtn = document.querySelector('.copy-btn');
                 const originalText = copyBtn.innerText;
 
-                copyBtn.innerText = "Copied!";
-                copyBtn.style.background = "#10b981"; // Green background
+                copyBtn.innerText = "COPIED";
+                copyBtn.style.background = "var(--success-green)";
+                copyBtn.style.color = "#000";
+                copyBtn.style.borderColor = "var(--success-green)";
 
                 setTimeout(() => {
                     copyBtn.innerText = originalText;
-                    copyBtn.style.background = "#374151"; // Revert color
+                    copyBtn.style.background = "transparent";
+                    copyBtn.style.color = "var(--gold-primary)";
+                    copyBtn.style.borderColor = "var(--gold-primary)";
                 }, 2000);
             });
         }
