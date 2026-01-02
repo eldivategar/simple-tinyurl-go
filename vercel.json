@@ -2,11 +2,11 @@
     "rewrites": [
         {
             "source": "/tinyurl",
-            "destination": "https://holy-raynell-eldivategar-812783ea.koyeb.app/tinyurl"
+            "destination": "https://eldivategar-lux-tinyurl-backend.hf.space/tinyurl"
         },
         {
             "source": "/:match*",
-            "destination": "https://holy-raynell-eldivategar-812783ea.koyeb.app/:match*"
+            "destination": "https://eldivategar-lux-tinyurl-backend.hf.space/:match*"
         }
     ]
 }
