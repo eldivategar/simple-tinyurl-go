@@ -4,10 +4,10 @@ services:
   app:
     build: .
     ports:
-      - "8000:8000"
+      - "7860:7860"
     environment:
       - REDIS_ADDR=redis:6379
-      - SERVER_URL=http://localhost:8000
+      - SERVER_URL=http://localhost:7860
     depends_on:
       - redis
 

@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	ServerURL            = "http://localhost:8000"
+	ServerURL            = "http://localhost:7860"
 	RateLimitMax         = 10
 	RateLimitWindows     = 1 * time.Minute
 	ExlusiveLinkExp  int = 24 // in hours
@@ -76,11 +76,11 @@ func main() {
 	mux.HandleFunc("/", RedirectHandler)
 
 	server := &http.Server{
-		Addr:    ":8000",
+		Addr:    ":7860",
 		Handler: corsMiddleware(rateLimitMiddleware(mux)),
 	}
 
-	fmt.Println("Server starting on :8000")
+	fmt.Println("Server starting on :7860")
 	if err := server.ListenAndServe(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			fmt.Println("Error starting server:", err)

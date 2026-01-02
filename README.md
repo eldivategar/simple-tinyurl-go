@@ -1,3 +1,13 @@
+---
+title: Lux Tinyurl Backend
+emoji: 🔗
+colorFrom: yellow
+colorTo: gray
+sdk: docker
+pinned: false
+app_port: 7860
+---
+
 # Simple TinyURL Service
 
 Service API URL shortener sederhana yang dibuat menggunakan Go dan Redis.
@@ -18,7 +28,7 @@ Jalankan perintah berikut untuk menjalankan aplikasi dan Redis sekaligus:
 docker-compose up --build
 ```
 
-Aplikasi akan berjalan di `http://localhost:8000`.
+Aplikasi akan berjalan di `http://localhost:7860`.
 
 ### Menjalankan Secara Manual (Local)
 
@@ -27,7 +37,7 @@ Pastikan Anda memiliki instance Redis yang berjalan, kemudian:
 1.  Set environment variable (opsional jika default):
     ```bash
     export REDIS_ADDR=localhost:6379
-    export SERVER_URL=http://localhost:8000
+    export SERVER_URL=http://localhost:7860
     ```
 2.  Jalankan aplikasi:
     ```bash
@@ -55,7 +65,7 @@ Membuat link pendek baru dari URL panjang. Link akan kadaluarsa dalam 24 jam.
 
 ```json
 {
-  "short_url": "http://localhost:8000/aBcD123456",
+  "short_url": "http://localhost:7860/aBcD123456",
   "long_url": "https://www.google.com/very/long/url/path",
   "message": "Short URL will be expired in 24 hours"
 }
@@ -74,4 +84,4 @@ Mengakses short URL akan me-redirect pengguna ke URL asli.
 | Variable | Deskripsi | Default |
 |----------|-----------|---------|
 | `REDIS_ADDR` | Alamat koneksi ke Redis | `localhost:6379` |
-| `SERVER_URL` | Base URL server untuk prefix short URL | `http://localhost:8000` |
+| `SERVER_URL` | Base URL server untuk prefix short URL | `http://localhost:7860` |
