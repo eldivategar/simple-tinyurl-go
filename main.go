@@ -80,6 +80,18 @@ func main() {
 		Handler: corsMiddleware(rateLimitMiddleware(mux)),
 	}
 
+	// instance of scheduller
+	scheduller := NewScheduller()
+	defer scheduller.Stop()
+
+	// heartbeat every 1 day
+	scheduller.AddFunc("@daily", func() {
+		fmt.Println("Running heartbeat job")
+	})
+
+	// start the scheduller
+	go scheduller.Start()
+
 	fmt.Println("Server starting on :7860")
 	if err := server.ListenAndServe(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
