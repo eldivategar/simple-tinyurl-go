@@ -13,6 +13,7 @@ func NewScheduller() *cron.Cron {
 		fmt.Println("Failed to use Jakarta time. Using UTC instead.")
 		jakartaTime = time.UTC
 	}
+	fmt.Println("Using time zone:", jakartaTime)
 	scheduller := cron.New(cron.WithLocation(jakartaTime))
 
 	return scheduller
