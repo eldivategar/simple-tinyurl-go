@@ -15,6 +15,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
+# Install timezone data
+RUN apk add --no-cache tzdata
+
 # Copy binary from stage builder
 COPY --from=builder /app/tinyurl .
 
