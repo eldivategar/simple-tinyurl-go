@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package tinyurl.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/eldivategar/simple-tinyurl-go/proto/tinyurl/v1;tinyurlv1";
+
+service TinyURL {
+  // Shorten accepts a long URL and returns a short URL/code.
+  rpc Shorten(ShortenRequest) returns (ShortenResponse) {
+    option (google.api.http) = {
+      post: "/tinyurl"
+      body: "*"
+    };
+  }
+
+  // GetOriginal retrieves the original URL for a given short code.
+  // This is primarily for internal use by the Redirect handler,
+  // but exposed via API for completeness.
+  rpc GetOriginal(GetOriginalRequest) returns (GetOriginalResponse) {
+    option (google.api.http) = {
+      get: "/v1/url/{short_code}"
+    };
+  }
+}
+
+message ShortenRequest {
+  string long_url = 1 [json_name = "long_url"];
+  string short_code = 2 [json_name = "short_code"]; // Optional custom alias
+}
+
+message ShortenResponse {
+  string short_url = 1 [json_name = "short_url"];
+  string long_url = 2 [json_name = "long_url"];
+  string message = 3;
+  string elapsed_time = 4 [json_name = "elapsed_time"];
+}
+
+message GetOriginalRequest {
+  string short_code = 1 [json_name = "short_code"];
+}
+
+message GetOriginalResponse {
+  string long_url = 1 [json_name = "long_url"];
+}
