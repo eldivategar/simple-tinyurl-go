@@ -85,6 +85,7 @@ func main() {
 	scheduller.AddFunc("@daily", func() {
 		fmt.Println("Running heartbeat job")
 	})
+	fmt.Println("Heartbeat job is ready!")
 
 	// ping redis daily
 	scheduller.AddFunc("@daily", func() {
@@ -95,6 +96,7 @@ func main() {
 			fmt.Println("Connected to Redis")
 		}
 	})
+	fmt.Println("Ping Redis job is ready!")
 
 	go scheduller.Start()
 
