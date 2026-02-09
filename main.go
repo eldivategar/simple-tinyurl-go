@@ -80,9 +80,22 @@ func main() {
 	// scheduler
 	scheduller := NewScheduller()
 	defer scheduller.Stop()
+
+	// heartbeat daily
 	scheduller.AddFunc("@daily", func() {
 		fmt.Println("Running heartbeat job")
 	})
+
+	// ping redis daily
+	scheduller.AddFunc("@daily", func() {
+		fmt.Println("Pinging Redis")
+		if err := rdb.Ping(ctx).Err(); err != nil {
+			fmt.Println("Error connecting to Redis:", err)
+		} else {
+			fmt.Println("Connected to Redis")
+		}
+	})
+
 	go scheduller.Start()
 
 	// --- gRPC Server Setup ---
