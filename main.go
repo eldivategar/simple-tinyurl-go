@@ -82,7 +82,7 @@ func main() {
 	defer scheduller.Stop()
 
 	// heartbeat daily
-	scheduller.AddFunc("@every 1m", func() {
+	scheduller.AddFunc("@daily", func() {
 		fmt.Println("Running heartbeat job")
 		resp, err := http.Get(ServerURL + "/ping")
 		if err != nil {
