@@ -82,8 +82,20 @@ func main() {
 	defer scheduller.Stop()
 
 	// heartbeat daily
-	scheduller.AddFunc("@daily", func() {
+	scheduller.AddFunc("@every 1m", func() {
 		fmt.Println("Running heartbeat job")
+		resp, err := http.Get(ServerURL + "/ping")
+		if err != nil {
+			fmt.Println("Error pinging server:", err)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			fmt.Println("Server is not running! Status:", resp.Status)
+		} else {
+			fmt.Println("Server is running!")
+		}
 	})
 	fmt.Println("Heartbeat job is ready!")
 
@@ -185,6 +197,11 @@ func main() {
 		}
 
 		http.Redirect(w, r, resp.LongUrl, http.StatusSeeOther)
+	})
+
+	// ping
+	mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("pong"))
 	})
 
 	server := &http.Server{
